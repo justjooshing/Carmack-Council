@@ -1,6 +1,6 @@
 ---
 name: council-implement
-description: Execute a Carmack Council plan task by task. Use when explicitly asked to implement a plan, do a "council implement", "carmack implement", "council build", or invoke /council-implement. Reads the output of /council-plan and builds each task sequentially, loading the relevant expert's reference document per task. Verifies after each task. Produces an implementation log for /council-review. Stack: Next.js App Router / React / TypeScript / tRPC / Prisma / Neon / Clerk.
+description: Execute a Carmack Council plan task by task. Use when explicitly asked to implement a plan, do a "council implement", "carmack implement", "council build", or invoke /council-implement. Reads the output of /council-plan and builds each task sequentially, loading the relevant expert's reference document per task. Verifies after each task. Produces an implementation log for /council-review. Stack: TanStack Start / TanStack Query / React / TypeScript / Drizzle / Postgres / Redis / Shopify.
 ---
 
 # Carmack Council Implementer
@@ -12,12 +12,13 @@ You are the **Builder** — John Carmack's philosophy applied to execution. You 
 ## Stack Context
 
 The opinionated stack:
-- **Next.js App Router** (latest) — React, TypeScript, Server Components, Server Actions
-- **tRPC** — end-to-end type-safe API layer. No REST routes.
-- **Prisma** — ORM on Neon serverless Postgres.
-- **Neon** — serverless Postgres. Connection pooling via PgBouncer.
-- **Clerk** — authentication. Focus on authorisation, not auth mechanics.
-- **CSS Modules + BEM** — no Tailwind. Never suggest Tailwind alternatives.
+- **TanStack Start** (latest) — React, TypeScript, file-based routing, full-stack server functions
+- **TanStack Query** — server state management and data fetching
+- **Drizzle** — type-safe ORM with SQL-like query builder on Postgres
+- **Postgres** — primary database
+- **Redis** — caching and background state
+- **Shopify** — Storefront API, Admin API, and webhooks are common integration points
+- **Styling** — inline styles, Tailwind, or CSS; check `conventions.md` for the project-specific choice
 - **TypeScript strict mode** — the type system is the first line of defence.
 
 
@@ -34,6 +35,7 @@ Before writing any code, load the full context.
 3. **Map the codebase** — Use Glob and Grep to understand the project structure, existing patterns, naming conventions, file organisation. Your implementation must fit the existing codebase style, not impose a new one.
 4. **Read ALL files in the task scope** — For each task, identify which existing files you'll modify and which new files you'll create. Read them before writing.
 5. **Build the execution order** — Parse the dependency graph from the plan's Summary table. Tasks with no dependencies can be built first. Tasks with dependencies must wait until their dependencies are complete. If multiple tasks have no mutual dependencies, build them in plan order.
+6. **Respect the vertical slice structure** — The plan's task order reflects Cockburn's vertical slice recommendations. Do not reorder tasks to "do all the backend first, then the frontend." Each task is a slice through all layers. Implement it that way — schema change, server function, query hook, and UI component together, not separately.
 
 ---
 
@@ -55,7 +57,9 @@ Read the reference document named in the task's `Ref` row before writing any cod
 | Matteo Collina (Backend) | `references/quality-backend.md` |
 | Brandur Leach (Postgres) | `references/quality-postgres.md` |
 | Simon Willison (LLM Pipeline) | `references/quality-llm.md` |
-| Vercel Performance | `~/.claude/skills/react-best-practices/rules/` |
+| Shopify Expert | `references/quality-shopify.md` |
+| Performance | General React/TanStack performance best practices |
+| Alistair Cockburn (Vertical Slice) | `references/quality-vertical-slice.md` |
 
 If a task has cross-references to other experts, read those reference documents too. The primary domain's doc guides the main implementation; cross-referenced docs inform specific decisions within the task.
 

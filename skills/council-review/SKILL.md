@@ -1,6 +1,6 @@
 ---
 name: council-review
-description: Perform a rigorous Carmack Council code review. Use when explicitly asked to review code, do a "council review", "carmack review", or invoke /council-review. Carmack's philosophy chairs a council of domain experts — Troy Hunt (security), Martin Fowler (refactoring), Kent C. Dodds (frontend), Matteo Collina (Node.js), Brandur Leach (Postgres), Vercel Performance, Simon Willison (LLM pipelines), Karri Saarinen (UI quality), Vitaly Friedman (UX quality), Kent Beck (test quality). Uses parallel subagents for deep, independent review. Produces prioritised P1/P2/P3 findings. Stack: Next.js App Router / React / TypeScript / tRPC / Prisma / Neon / Clerk.
+description: Perform a rigorous Carmack Council code review. Use when explicitly asked to review code, do a "council review", "carmack review", or invoke /council-review. Carmack's philosophy chairs a council of domain experts — Troy Hunt (security), Martin Fowler (refactoring), Kent C. Dodds (frontend), Matteo Collina (Node.js), Brandur Leach (Postgres), Performance expert, Simon Willison (LLM pipelines), Karri Saarinen (UI quality), Vitaly Friedman (UX quality), Kent Beck (test quality). Uses parallel subagents for deep, independent review. Produces prioritised P1/P2/P3 findings. Stack: TanStack Start / TanStack Query / React / TypeScript / Drizzle / Postgres / Redis / Shopify.
 ---
 
 # Carmack Council Reviewer
@@ -12,17 +12,16 @@ You are the **Chair** — John Carmack's philosophy made operational. You coordi
 ## Stack Context
 
 The opinionated stack:
-- **Next.js App Router** (latest) — React, TypeScript, Server Components, Server Actions
-- **tRPC** — end-to-end type-safe API layer. No REST routes.
-- **Prisma** — ORM on Neon serverless Postgres.
-- **Neon** — serverless Postgres. Connection pooling via PgBouncer.
-- **Clerk** — authentication. Focus review on authorisation, not auth mechanics.
-- **CSS Modules + BEM** — no Tailwind. Never suggest Tailwind alternatives.
+- **TanStack Start** (latest) — React, TypeScript, file-based routing, full-stack server functions
+- **TanStack Query** — server state management and data fetching
+- **Drizzle** — type-safe ORM with SQL-like query builder on Postgres
+- **Postgres** — primary database
+- **Redis** — caching and background state
+- **Shopify** — Storefront API, Admin API, and webhooks are common integration points
+- **Styling** — inline styles, Tailwind, or CSS; check `conventions.md` for the project-specific choice
 - **TypeScript strict mode** — the type system is the first line of defence.
 
-**Deployment target: Railway** — persistent long-lived containers, NOT Vercel serverless. In-memory state (rate limiters, caches, background timers) survives across requests. `waitUntil()` is not required for background work — the process stays alive. Do not flag fire-and-forget patterns as serverless lifetime issues.
-
-Scale concerns (sharding, read replicas, multi-region) are premature. tRPC replaces REST — the type bridge IS the contract.
+Scale concerns (sharding, read replicas, multi-region) are premature.
 
 ---
 
@@ -88,19 +87,19 @@ Before briefing anyone, build a structural map of the codebase. **You are mappin
 1. **Identify the scope** — Ask the user what files/modules to review if not specified. Confirm before proceeding.
 2. **Glob the structure** — Get the full directory tree of source files. Understand module boundaries, where code lives, what's config vs source vs test.
 3. **Grep for architectural patterns** — Search for structural markers, not bugs:
-   - `createTRPCRouter`, `protectedProcedure`, `publicProcedure` → tRPC router structure
-   - `Prisma`, `prisma.`, `$queryRaw` → database access patterns and which files touch Prisma
-   - `'use client'`, `'use server'` → Server/Client Component boundaries
-   - `middleware`, `auth()`, `currentUser()` → auth and middleware chain
+   - `createServerFn`, `createRoute`, `defineRoute` → TanStack Start server function and route structure
+   - `useQuery`, `useMutation`, `queryOptions` → TanStack Query data fetching patterns
+   - `drizzle(`, `db.select`, `db.insert`, `db.update`, `db.delete` → Drizzle ORM usage and which files touch the DB
+   - `redis.`, `createClient(` → Redis usage patterns
+   - `shopify`, `storefront`, `admin.` → Shopify API integration points
    - `import` patterns → dependency graph between modules
    - `export default function`, `export const` → entry points and barrel exports
-   - `.module.css` → which components have styles
    - `describe(`, `it(`, `test(` → test file locations and patterns
 4. **Read only architectural files** — Read a small number of key files to understand the skeleton:
-   - `package.json`, `tsconfig.json`, `next.config.*` — build/config
-   - `prisma/schema.prisma` — data model
-   - tRPC root router / app router — API shape
-   - Main middleware file — auth/routing layer
+   - `package.json`, `tsconfig.json`, `app.config.*`, `vite.config.*` — build/config
+   - Drizzle schema files (`schema.ts`, `db/schema/`) — data model
+   - TanStack Start route tree / root route — routing shape
+   - Main middleware or auth file — auth/routing layer
    - Any barrel exports or index files that reveal module structure
    - **Cap: ~8–10 files max.** If you're reading more, you're doing the experts' job.
 5. **Read conventions.md** — If it exists at the project root (`conventions.md`), read it completely. These are accepted patterns from prior council reviews. Share relevant conventions in the context brief so subagents don't flag accepted patterns as findings.
@@ -151,14 +150,15 @@ Using the Grep results from Phase 1, categorise every file in scope into one or 
 ```
 ### Domain File Assignments
 
-**Hunt (Security):** [middleware, auth files, tRPC context/router files, env config, API routes, webhook handlers]
-**Dodds (Frontend):** [components, pages, layouts, hooks, styles, client-side utilities]
-**Collina (Backend):** [tRPC routers, server actions, lib/server utilities, middleware, error handling]
-**Leach (Postgres):** [schema.prisma, migrations, any file importing prisma, db client config]
-**Vercel (Performance):** [pages, layouts, components with data fetching, route handlers, loading/error boundaries]
-**Saarinen (UI Quality):** [components, pages, layouts, CSS Modules, any file with visual output]
-**Friedman (UX Quality):** [pages, layouts, forms, modals, empty states, error boundaries, loading states, navigation components]
+**Hunt (Security):** [middleware, auth files, server function files, env config, webhook handlers, Shopify API integration files]
+**Dodds (Frontend):** [components, route components, layouts, hooks, styles, client-side utilities, TanStack Query hooks]
+**Collina (Backend):** [server functions, lib/server utilities, middleware, error handling, Redis usage, Shopify API calls]
+**Leach (Postgres):** [schema files, migrations, any file importing the Drizzle db client, db config]
+**Performance:** [route components with data fetching, TanStack Query configuration, lazy-loaded modules, asset-heavy components, loading/error boundaries]
+**Saarinen (UI Quality):** [components, route components, layouts, any file with visual output or styling]
+**Friedman (UX Quality):** [route components, layouts, forms, modals, empty states, error boundaries, loading states, navigation components]
 **Fowler (Refactoring):** [module boundary files, barrel exports, shared utilities, files with complex abstractions, files touched by multiple other modules, dependency-heavy files]
+**Shopify:** [files importing @shopify/polaris or @shopify/app-bridge, Shopify API integration files, webhook handlers, Shopify Functions, metafield read/write code, Admin/Storefront API calls]
 **Willison (LLM Pipeline):** [files with LLM API calls, prompt templates, AI SDK usage, streaming handlers, tool/function definitions, evaluation code, any file importing AI/LLM libraries]
 **Beck (Test Quality):** [test files (*.test.ts, *.test.tsx, *.cy.ts), the source files they test, test config (vitest.config.ts, cypress.config.ts), test utilities and fixtures]
 ```
