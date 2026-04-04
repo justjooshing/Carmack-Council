@@ -216,3 +216,15 @@ Load references **conditionally based on tier and need**:
 | `references/anti-patterns.md` | Phase 4 self-review, or if user input contains red flags |
 
 **Never load all references at once.** Each is self-contained. Load what you need, when you need it.
+
+---
+
+## Next Step
+
+Once the spec is approved, the next skill in the Carmack Council workflow is:
+
+```
+/council-plan
+```
+
+Feed it the spec file path. The council will architect the implementation plan before any code is written.

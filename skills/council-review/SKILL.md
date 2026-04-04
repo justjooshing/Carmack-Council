@@ -102,7 +102,7 @@ Before briefing anyone, build a structural map of the codebase. **You are mappin
    - Main middleware or auth file — auth/routing layer
    - Any barrel exports or index files that reveal module structure
    - **Cap: ~8–10 files max.** If you're reading more, you're doing the experts' job.
-5. **Read conventions.md** — If it exists at the project root (`conventions.md`), read it completely. These are accepted patterns from prior council reviews. Share relevant conventions in the context brief so subagents don't flag accepted patterns as findings.
+5. **Read conventions.md** — If it exists at the project root (`conventions.md`), read it completely. These are accepted patterns from prior council reviews. Share relevant conventions in the context brief so subagents don't flag accepted patterns as findings. If `conventions.md` contains a `Best Practices File:` line (e.g. `Best Practices File: ~/.claude/amp-best-practices.md`), read that file too and include its rules in the context brief — subagents must treat violations of best practices rules as findings.
 6. **Check history** — `git log --oneline -15` for trajectory. Don't read diffs.
 
 **What NOT to do in Phase 1:**
@@ -855,3 +855,20 @@ These will be shared with all council members in future reviews via the context 
 ```
 
 **If the user says "none":** Skip the update entirely. Say "No conventions added. Moving on." Do not push back or suggest they reconsider.
+
+---
+
+## Next Step
+
+Once findings are addressed and conventions are updated, the Carmack Council workflow loops back:
+
+- **New feature or spec needed?** → `/spec-writer`
+- **P1/P2 fixes require re-planning?** → `/council-plan` with the findings as input
+- **Fixes are small enough to implement directly?** → fix and re-run `/council-review` on changed files
+
+The workflow is:
+```
+/spec-writer  →  /council-plan  →  /council-implement  →  /council-review
+     ↑                                                            |
+     └────────────────────────────────────────────────────────────┘
+```

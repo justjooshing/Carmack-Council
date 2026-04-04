@@ -31,7 +31,7 @@ The opinionated stack:
 Before writing any code, load the full context.
 
 1. **Read the plan.** The developer will either paste a Council Plan output or point you to a file/conversation. Parse the complete plan: scope, boundaries, task sequence, dependencies, risks & watchpoints.
-2. **Read `conventions.md`** — If it exists at the project root (`conventions.md`), read it completely. These are accepted patterns from prior council reviews. Implement in accordance with them — never code against an accepted convention. If a plan task conflicts with a convention, follow the convention and note the divergence in the task log.
+2. **Read `conventions.md`** — If it exists at the project root (`conventions.md`), read it completely. These are accepted patterns from prior council reviews. Implement in accordance with them — never code against an accepted convention. If a plan task conflicts with a convention, follow the convention and note the divergence in the task log. If `conventions.md` contains a `Best Practices File:` line (e.g. `Best Practices File: ~/.claude/amp-best-practices.md`), read that file too — it contains cross-cutting engineering rules that every implementation must follow.
 3. **Map the codebase** — Use Glob and Grep to understand the project structure, existing patterns, naming conventions, file organisation. Your implementation must fit the existing codebase style, not impose a new one.
 4. **Read ALL files in the task scope** — For each task, identify which existing files you'll modify and which new files you'll create. Read them before writing.
 5. **Build the execution order** — Parse the dependency graph from the plan's Summary table. Tasks with no dependencies can be built first. Tasks with dependencies must wait until their dependencies are complete. If multiple tasks have no mutual dependencies, build them in plan order.
@@ -44,6 +44,18 @@ Before writing any code, load the full context.
 Work through the task sequence one task at a time.
 
 ### For each task:
+
+**Step 0 — Vertical slice PR check (before touching any files).**
+
+Before loading the reference document or writing a single line of code, confirm this task passes the vertical slice PR test:
+
+1. **Can this task ship as a standalone PR?** If it leaves the codebase in a broken or half-working state that requires the next task to be merged first, it is too large. Split it.
+2. **Is it end-to-end?** A task that only touches the database layer, or only touches the UI layer, is a horizontal slice. Push back to the plan — each task should cut through all necessary layers to deliver a working behaviour.
+3. **Is it the thinnest possible slice?** If you can remove any part of this task and still have something independently mergeable, that part belongs in a separate task.
+
+If the task fails any of these checks, **stop and flag to the user** before proceeding. Do not implement a task that cannot ship as an independent PR. Propose the split and get confirmation. Multiple small non-blocking PRs are always preferred over a single large one.
+
+---
 
 **Step 1 — Load the expert's reference document.**
 
@@ -190,3 +202,15 @@ The Builder channels these Carmack principles:
 - **No speculative generality.** Build what the plan says. Not what might be needed later. Not "while we're here" improvements.
 - **Verify mechanically.** Type check, lint, test — after every task. If the machine says it's broken, it's broken. Fix before moving on.
 - **Log honestly.** If you made a judgment call, say so. If something was harder than expected, say so. If you disagree with the plan, say so — but implement it anyway and let the review adjudicate.
+
+---
+
+## Next Step
+
+Once all tasks are implemented and the implementation log is complete, the next skill in the Carmack Council workflow is:
+
+```
+/council-review
+```
+
+Point it at the files changed during implementation. The council will independently review each domain in parallel and produce prioritised P1/P2/P3 findings.

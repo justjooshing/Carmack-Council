@@ -35,7 +35,7 @@ Before talking to the developer about the feature, understand what already exist
    - Existing patterns: how auth is done, how server functions are organised, how components are structured
    - Schema shape: existing Drizzle schema, relations, indexes
    - Test coverage and testing patterns
-2. **Read conventions.md** — If it exists at the project root (`conventions.md`), read it completely. These are accepted patterns from prior council reviews. The plan must respect them — never recommend against an accepted convention.
+2. **Read conventions.md** — If it exists at the project root (`conventions.md`), read it completely. These are accepted patterns from prior council reviews. The plan must respect them — never recommend against an accepted convention. If `conventions.md` contains a `Best Practices File:` line (e.g. `Best Practices File: ~/.claude/amp-best-practices.md`), read that file too — it contains cross-cutting engineering rules that apply to all plans.
 3. **Check history** — If git is available, review recent commits to understand trajectory and current work.
 4. **Do NOT output anything from this phase to the developer.** This is your internal preparation. Move directly to Phase 2.
 
@@ -439,6 +439,12 @@ Once all subagents return, the Chair (you) must:
    - "Does this conflict with an accepted convention?"
 5. **Sequence into tasks** — Group related recommendations into logical build tasks. A task might combine Brandur's schema recommendation with Hunt's constraint recommendation if they touch the same model. Saarinen and Friedman recommendations often combine into a single "build the UI with these visual and interaction requirements" task.
 6. **Cap at 15 tasks.** If total exceeds 15, merge related tasks. A focused plan with 8 clear tasks beats 20 granular ones.
+7. **Apply the vertical slice PR test to every task.** Before finalising the task list, evaluate each task against this hard constraint:
+   - Can this task be implemented and merged as a standalone PR without blocking any other task in the plan?
+   - Does it deliver working, testable software end-to-end (not just a layer)?
+   - Is it the thinnest possible slice that still has independent value?
+
+   If any task fails this test, split it further or reorder it until every task can ship independently. A plan where tasks 1–3 must merge together before anything works is a horizontal layer plan disguised as a vertical slice plan. Reject it. Multiple small non-blocking PRs are always preferred over a single large one. This constraint applies even if it means more tasks — the 15-task cap is a ceiling, not a target.
 7. **Identify risks** — Recommendations that aren't tasks but need awareness during build. These become the Risks & Watchpoints section.
 
 ---
@@ -448,7 +454,7 @@ Once all subagents return, the Chair (you) must:
 **CRITICAL: Write the plan to a file before displaying it.**
 
 1. **Generate a unique filename** using the pattern: `PLAN-[feature-slug].md` where `[feature-slug]` is a kebab-case version of the feature name (e.g., "Restore Copy Examples" → `PLAN-copy-examples-restoration.md`)
-2. **Write the plan** to this file in the project root using the Write tool
+2. **Write the plan** to `/tmp/PLAN-[feature-slug].md` — NOT the project root. Plans are local working documents, not repo artefacts. They are cleaned up once the feature is complete.
 3. **Display the plan** to the user with the file path at the top
 
 Use this exact format. Attribution is non-negotiable — every task traces to its council member and principle.
@@ -551,3 +557,15 @@ The Chair channels these Carmack principles when writing the final output:
 - **No sycophancy** — Don't open with "great feature idea!" If the scope has risks, say so. If it's straightforward, say that too.
 - **Economic, not aesthetic** — Every task must pass Fowler's test: "will this pay off?" If a recommendation only matters at 100k users, cut it.
 - **Attribute everything** — Every task traces to an expert and a principle. The developer can evaluate the source and decide whether to follow, defer, or override.
+
+---
+
+## Next Step
+
+Once the plan is reviewed and approved, the next skill in the Carmack Council workflow is:
+
+```
+/council-implement
+```
+
+Feed it the plan file path. The implementer will execute each task in dependency order, loading the relevant expert's reference document per task.

@@ -4,6 +4,9 @@ Accepted patterns from council reviews. Plans and implementations must respect t
 
 Last updated: 2026-02-25
 
+**Best Practices File:** `~/.claude/your-best-practices.md`
+*(Optional — point this at your org/personal best practices file. All council skills will read it alongside this file.)*
+
 ---
 
 ## Prisma Schema (Brandur)
